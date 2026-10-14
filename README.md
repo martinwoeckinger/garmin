@@ -39,6 +39,11 @@ Alternativ können `GARMIN_EMAIL` und `GARMIN_PASSWORD` als Umgebungsvariablen g
 
 Die JSON-Datei enthält dieselben Daten unverändert, falls du sie anders auswerten willst.
 
+## Automatisch in der Cloud (Handy)
+
+Siehe `ROUTINE.md`: Eine Claude-Code-Routine führt Export und Analyse täglich in der Cloud aus,
+das Ergebnis landet in der Claude-App und unter `analyse/`.
+
 ## Hinweise
 
 - `export/` ist in `.gitignore`, damit keine Gesundheitsdaten in ein Repo gelangen.

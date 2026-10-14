@@ -8,6 +8,9 @@ Aufruf:
 
 Beim ersten Lauf wird nach E-Mail/Passwort (und ggf. MFA-Code) gefragt.
 Die Tokens werden unter ~/.garminconnect gespeichert, danach ist kein Login mehr nötig.
+
+Cloud/CI: Umgebungsvariable GARMINTOKENS auf den Inhalt von
+~/.garminconnect/garmin_tokens.json setzen (JSON-String), dann ist kein Login nötig.
 """
 
 from __future__ import annotations
@@ -53,9 +56,16 @@ def login() -> Garmin:
     except (GarminConnectAuthenticationError, FileNotFoundError, Exception):
         pass
 
+    email = os.getenv("GARMIN_EMAIL")
+    password = os.getenv("GARMIN_PASSWORD")
+    if not (email and password) and not sys.stdin.isatty():
+        raise GarminConnectAuthenticationError(
+            "Kein gültiger Token und kein Terminal für die Anmeldung. "
+            "GARMINTOKENS (Token-JSON) oder GARMIN_EMAIL/GARMIN_PASSWORD setzen."
+        )
     print("Kein gültiger Token gefunden. Bitte Garmin-Connect-Zugangsdaten eingeben.")
-    email = os.getenv("GARMIN_EMAIL") or input("E-Mail: ").strip()
-    password = os.getenv("GARMIN_PASSWORD") or getpass.getpass("Passwort: ")
+    email = email or input("E-Mail: ").strip()
+    password = password or getpass.getpass("Passwort: ")
     api = Garmin(email, password, prompt_mfa=lambda: input("MFA-Code: ").strip())
     api.login(TOKENSTORE)
     return api

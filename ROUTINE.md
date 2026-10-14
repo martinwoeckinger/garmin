@@ -9,7 +9,7 @@ nach `analyse/JJJJ-MM-TT.md`. Das Ergebnis ist in der Claude-App am Handy sichtb
 
 1. **Garmin-Token als Umgebungsvariable hinterlegen**
    Unter https://claude.ai/code/environments die Cloud-Umgebung öffnen und eine
-   Umgebungsvariable `GARMINTOKENS` anlegen. Wert = kompletter Inhalt der Datei
+   Umgebungsvariable `GARMINTOKENS` anlegen (`GARMINTOKEN` ohne S wird auch akzeptiert). Wert = kompletter Inhalt der Datei
    `%USERPROFILE%\.garminconnect\garmin_tokens.json` (eine Zeile JSON).
    Lokal anzeigen mit:
 
@@ -26,8 +26,8 @@ nach `analyse/JJJJ-MM-TT.md`. Das Ergebnis ist in der Claude-App am Handy sichtb
 
 ## Python in der Cloud
 
-In der Standard-Cloud-Umgebung ist `python` Python 3.11, `garminconnect` braucht aber
-Python 3.12 oder neuer. Die Routine verwendet deshalb `python3` (3.13) für pip und Skript.
+In der Standard-Cloud-Umgebung sind `python` und `python3` Python 3.11, `garminconnect` braucht
+aber Python 3.12 oder neuer. Die Routine verwendet deshalb explizit `python3.13` für pip und Skript.
 
 ## Token-Erneuerung
 

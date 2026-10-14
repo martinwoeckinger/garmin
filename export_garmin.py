@@ -32,7 +32,8 @@ from garminconnect import (
     GarminConnectTooManyRequestsError,
 )
 
-TOKENSTORE = os.getenv("GARMINTOKENS", "~/.garminconnect")
+# Token-JSON oder Pfad; GARMINTOKEN (ohne S) wird als Tippfehler-Variante akzeptiert
+TOKENSTORE = os.getenv("GARMINTOKENS") or os.getenv("GARMINTOKEN") or "~/.garminconnect"
 EXPORT_DIR = Path(__file__).parent / "export"
 
 STATUS_DE = {

@@ -24,6 +24,11 @@ nach `analyse/JJJJ-MM-TT.md`. Das Ergebnis ist in der Claude-App am Handy sichtb
 3. **Repo-Zugriff**: Die Routine braucht Lese- und Schreibrechte auf
    `github.com/martinwoeckinger/garmin` (GitHub-App von Claude Code).
 
+## Python in der Cloud
+
+In der Standard-Cloud-Umgebung ist `python` Python 3.11, `garminconnect` braucht aber
+Python 3.12 oder neuer. Die Routine verwendet deshalb `python3` (3.13) für pip und Skript.
+
 ## Token-Erneuerung
 
 Der Zugriffstoken ist ca. 24 h gültig und wird über den Refresh-Token erneuert.

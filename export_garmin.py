@@ -9,13 +9,14 @@ Aufruf:
 Beim ersten Lauf wird nach E-Mail/Passwort (und ggf. MFA-Code) gefragt.
 Die Tokens werden unter ~/.garminconnect gespeichert, danach ist kein Login mehr nötig.
 
-Cloud/CI: Umgebungsvariable GARMINTOKENS auf den Inhalt von
-~/.garminconnect/garmin_tokens.json setzen (JSON-String), dann ist kein Login nötig.
+Cloud/CI: `python export_garmin.py --cloud-token` legt den Token als Base64 in die
+Zwischenablage; diesen Wert als Umgebungsvariable GARMINTOKENS setzen.
 """
 
 from __future__ import annotations
 
 import argparse
+import base64
 import getpass
 import json
 import os
@@ -32,8 +33,62 @@ from garminconnect import (
     GarminConnectTooManyRequestsError,
 )
 
-# Token-JSON oder Pfad; GARMINTOKEN (ohne S) wird als Tippfehler-Variante akzeptiert
-TOKENSTORE = os.getenv("GARMINTOKENS") or os.getenv("GARMINTOKEN") or "~/.garminconnect"
+TOKEN_FILE = Path("~/.garminconnect/garmin_tokens.json").expanduser()
+
+
+def resolve_tokenstore() -> str:
+    """Token-Quelle bestimmen: Umgebungsvariable (JSON oder Base64) oder lokaler Ordner.
+
+    GARMINTOKEN (ohne S) wird als Tippfehler-Variante akzeptiert. Base64 ist für
+    Cloud-Umgebungen gedacht, deren .env-Eingabe Leerzeichen/Anführungszeichen
+    im JSON nicht sauber übernimmt.
+    """
+    raw = (os.getenv("GARMINTOKENS") or os.getenv("GARMINTOKEN") or "").strip()
+    if not raw:
+        return "~/.garminconnect"
+    if raw.startswith("{"):
+        try:
+            json.loads(raw)
+            return raw
+        except json.JSONDecodeError as exc:
+            raise GarminConnectAuthenticationError(
+                f"GARMINTOKENS ist kein gültiges JSON (Länge {len(raw)}): {exc}. "
+                "Tipp: Wert mit --cloud-token als Base64 erzeugen."
+            ) from exc
+    try:
+        decoded = base64.b64decode(raw, validate=True).decode("utf-8")
+        json.loads(decoded)
+        return decoded
+    except Exception as exc:  # noqa: BLE001
+        raise GarminConnectAuthenticationError(
+            f"GARMINTOKENS ist weder JSON noch Base64-JSON (Länge {len(raw)}, "
+            f"beginnt mit {raw[:1]!r}). Wert mit --cloud-token neu erzeugen."
+        ) from exc
+
+
+def copy_to_clipboard(text: str) -> None:
+    if sys.platform == "win32":
+        subprocess.run("clip", input=text.encode("utf-16-le"), check=True)
+    elif sys.platform == "darwin":
+        subprocess.run("pbcopy", input=text.encode(), check=True)
+    else:
+        subprocess.run(["xclip", "-selection", "clipboard"], input=text.encode(), check=True)
+
+
+def cloud_token() -> int:
+    """Token-Datei als Base64 in die Zwischenablage legen (für GARMINTOKENS in der Cloud)."""
+    if not TOKEN_FILE.exists():
+        print(f"Keine Token-Datei unter {TOKEN_FILE}. Erst einmal normal exportieren.", file=sys.stderr)
+        return 1
+    b64 = base64.b64encode(TOKEN_FILE.read_bytes()).decode("ascii")
+    try:
+        copy_to_clipboard(b64)
+        print(f"Base64-Token ({len(b64)} Zeichen) liegt in der Zwischenablage.")
+    except Exception as exc:  # noqa: BLE001
+        print(f"Zwischenablage nicht verfügbar ({exc}). Wert:")
+        print(b64)
+    print("In der Cloud-Umgebung als Umgebungsvariable eintragen:  GARMINTOKENS=<eingefügter Wert>")
+    return 0
 EXPORT_DIR = Path(__file__).parent / "export"
 
 STATUS_DE = {
@@ -50,12 +105,13 @@ STATUS_DE = {
 # ---------------------------------------------------------------------------
 def login() -> Garmin:
     """Erst gespeicherte Tokens versuchen, sonst interaktiv anmelden."""
+    tokenstore = resolve_tokenstore()
     try:
         api = Garmin()
-        api.login(TOKENSTORE)
+        api.login(tokenstore)
         return api
-    except (GarminConnectAuthenticationError, FileNotFoundError, Exception):
-        pass
+    except Exception as exc:  # noqa: BLE001
+        print(f"Gespeicherter Token nicht nutzbar: {type(exc).__name__}: {exc}", file=sys.stderr)
 
     email = os.getenv("GARMIN_EMAIL")
     password = os.getenv("GARMIN_PASSWORD")
@@ -68,7 +124,7 @@ def login() -> Garmin:
     email = email or input("E-Mail: ").strip()
     password = password or getpass.getpass("Passwort: ")
     api = Garmin(email, password, prompt_mfa=lambda: input("MFA-Code: ").strip())
-    api.login(TOKENSTORE)
+    api.login("~/.garminconnect")
     return api
 
 
@@ -295,7 +351,12 @@ def main() -> int:
     parser.add_argument("--weight-days", type=int, default=30, help="Tage für Gewicht (Standard 30)")
     parser.add_argument("--clip", action="store_true", help="Markdown in die Zwischenablage kopieren")
     parser.add_argument("--out", type=Path, default=EXPORT_DIR, help="Zielordner (Standard ./export)")
+    parser.add_argument("--cloud-token", action="store_true",
+                        help="Token als Base64 in die Zwischenablage legen (für GARMINTOKENS in der Cloud)")
     args = parser.parse_args()
+
+    if args.cloud_token:
+        return cloud_token()
 
     print("Anmeldung bei Garmin Connect ...")
     try:
@@ -331,12 +392,7 @@ def main() -> int:
 
     if args.clip:
         try:
-            if sys.platform == "win32":
-                subprocess.run("clip", input=md.encode("utf-16-le"), check=True)
-            elif sys.platform == "darwin":
-                subprocess.run("pbcopy", input=md.encode(), check=True)
-            else:
-                subprocess.run(["xclip", "-selection", "clipboard"], input=md.encode(), check=True)
+            copy_to_clipboard(md)
             print("Markdown in die Zwischenablage kopiert.")
         except Exception as exc:  # noqa: BLE001
             print(f"Zwischenablage nicht verfügbar: {exc}", file=sys.stderr)

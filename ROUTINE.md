@@ -8,14 +8,16 @@ nach `analyse/JJJJ-MM-TT.md`. Das Ergebnis ist in der Claude-App am Handy sichtb
 ## Einmalige Einrichtung
 
 1. **Garmin-Token als Umgebungsvariable hinterlegen**
-   Unter https://claude.ai/code/environments die Cloud-Umgebung öffnen und eine
-   Umgebungsvariable `GARMINTOKENS` anlegen (`GARMINTOKEN` ohne S wird auch akzeptiert). Wert = kompletter Inhalt der Datei
-   `%USERPROFILE%\.garminconnect\garmin_tokens.json` (eine Zeile JSON).
-   Lokal anzeigen mit:
+   Lokal ausführen, der Wert liegt danach in der Zwischenablage:
 
    ```
-   type %USERPROFILE%\.garminconnect\garmin_tokens.json
+   python export_garmin.py --cloud-token
    ```
+
+   Unter https://claude.ai/code/environments die Cloud-Umgebung öffnen und bei
+   Umgebungsvariablen eine Zeile `GARMINTOKENS=<eingefügter Wert>` eintragen.
+   Der Wert ist Base64 (nur Buchstaben, Ziffern, `+/=`), weil die .env-Eingabe
+   das rohe JSON mit Leerzeichen und Anführungszeichen nicht sauber übernimmt.
 
 2. **Netzwerk freigeben**, falls die Umgebung eine Domain-Allowlist nutzt:
    `connect.garmin.com`, `connectapi.garmin.com`, `diauth.garmin.com`,
@@ -34,7 +36,8 @@ aber Python 3.12 oder neuer. Die Routine verwendet deshalb explizit `python3.13`
 Der Zugriffstoken ist ca. 24 h gültig und wird über den Refresh-Token erneuert.
 Falls Garmin den Refresh-Token irgendwann rotiert oder er abläuft, schlägt die Routine
 mit "Anmeldung fehlgeschlagen" fehl. Dann lokal einmal `python export_garmin.py`
-ausführen (ggf. neu anmelden) und den neuen Dateiinhalt wieder in `GARMINTOKENS` kopieren.
+ausführen (ggf. neu anmelden), danach `python export_garmin.py --cloud-token` und den neuen
+Wert wieder in `GARMINTOKENS` eintragen.
 
 ## Manuell auslösen
 

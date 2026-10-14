@@ -1,3 +1,4 @@
 # Gesundheitsdaten nicht committen
 export/
 __pycache__/
+garmy/

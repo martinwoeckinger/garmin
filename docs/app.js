@@ -170,7 +170,7 @@
   }
   function activityList(acts) {
     if (!acts.length) return el("div", { class: "empty" }, "Keine Garmin-Aktivitäten");
-    return table(["Datum", "Aktivität", "Dauer", "Distanz", "kcal", "Ø HF", "max HF", "Höhe ↑"], acts.map((a) => [fmtShort(a.date) + " " + fmtTime(a.start_time), `${a.name || ""} ${el("span", { class: "muted" }).textContent}`.trim(), mins(a.duration_s), a.distance_m > 0 ? n1(a.distance_m / 1000) + " km" : "–", n0(a.calories), n0(a.avg_hr), n0(a.max_hr), a.elevation_gain_m ? n0(a.elevation_gain_m) + " m" : "–"]), { numCols: [2, 3, 4, 5, 6, 7] });
+    return table(["Datum", "Aktivität", "Dauer", "Distanz", "kcal", "Ø HF", "max HF", "Höhe ↑"], acts.map((a) => [fmtShort(a.date) + " " + fmtTime(a.start_time), a.name || actName(a.type), mins(a.duration_s), a.distance_m > 0 ? n1(a.distance_m / 1000) + " km" : "–", n0(a.calories), n0(a.avg_hr), n0(a.max_hr), a.elevation_gain_m ? n0(a.elevation_gain_m) + " m" : "–"]), { numCols: [2, 3, 4, 5, 6, 7] });
   }
   function setStr(s) {
     if (s.duration_s && !s.reps) return `${Math.round(s.duration_s / 60)} min`;
@@ -385,7 +385,8 @@
     )));
     main.append(section("Training", el("div", { class: "grid" },
       card("Aktivitäten nach Typ", activityTypeTable(a.acts)),
-      card("Übungen des Monats", exerciseTop(a.wos)),
+      card("Übungen des Monats", exerciseTop(a.wos))),
+      el("div", { class: "grid wide" },
       card(`Garmin-Aktivitäten (${a.acts.length})`, activityList(a.acts.slice().reverse())),
       card(`Hevy-Workouts (${a.wos.length})`, workoutSummaryTable(a.wos)))));
     return main;

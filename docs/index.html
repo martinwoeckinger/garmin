@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gesundheits-Dashboard</title>
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%232a78d6'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="login" class="login hidden">
+  <form id="login-form" class="login-card">
+    <h1>Gesundheits-Dashboard</h1>
+    <p class="muted">Garmin + Hevy · Anmeldung mit deinem Supabase-Konto</p>
+    <label>E-Mail <input type="email" name="email" autocomplete="username" required></label>
+    <label>Passwort <input type="password" name="password" autocomplete="current-password"></label>
+    <div class="row">
+      <button type="submit" class="primary">Anmelden</button>
+      <button type="button" id="magic-link">Magic-Link per E-Mail</button>
+    </div>
+    <p id="login-msg" class="msg"></p>
+  </form>
+</div>
+
+<div id="app" class="hidden">
+  <header class="topbar">
+    <div class="brand">Gesundheits-Dashboard</div>
+    <nav class="tabs" id="tabs">
+      <a href="#tag" data-view="tag">Tag</a>
+      <a href="#woche" data-view="woche">Woche</a>
+      <a href="#monat" data-view="monat">Monat</a>
+      <a href="#kraft" data-view="kraft">Kraft</a>
+    </nav>
+    <div class="topbar-right">
+      <span id="sync-info" class="muted small"></span>
+      <button id="theme-toggle" title="Hell/Dunkel" aria-label="Farbschema wechseln">◐</button>
+      <button id="logout">Abmelden</button>
+    </div>
+  </header>
+  <main id="main">
+    <div class="loading" id="loading">Lade Daten …</div>
+  </main>
+</div>
+
+<script src="vendor/supabase.js"></script>
+<script src="vendor/chart.umd.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

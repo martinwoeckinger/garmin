@@ -1,4 +1,18 @@
-# Garmin-Export für die tägliche Analyse
+# Garmin + Hevy: Dashboard und täglicher Export
+
+## Dashboard (GitHub Pages)
+
+`docs/` enthält ein statisches Dashboard (Tag / Woche / Monat / Kraft) mit allen Garmin-
+und Hevy-Kennzahlen. Die Daten liegen in Supabase (Schema: `supabase/schema.sql`), der Login
+läuft über Supabase Auth (E-Mail + Passwort oder Magic-Link). Wie die Daten über die
+MCP-Konnektoren nach Supabase kommen, steht in `SYNC.md`.
+
+Veröffentlichen: In den Repo-Einstellungen unter *Pages* die Quelle auf **GitHub Actions**
+stellen; der Workflow `.github/workflows/pages.yml` deployt `docs/` bei jedem Push auf `main`
+(oder manuell über *Run workflow*). URL: `https://martinwoeckinger.github.io/garmin/`.
+Lokal testen: `python3 -m http.server -d docs 8000` und `http://localhost:8000` öffnen.
+
+## Garmin-Export für die tägliche Analyse (bisheriger Ablauf)
 
 Holt HFV-Status (mit 7-Tage-Verlauf), Schlafdaten und Gewicht aus Garmin Connect
 und schreibt sie als Markdown und JSON nach `export/`. Das Markdown ist so formatiert,
